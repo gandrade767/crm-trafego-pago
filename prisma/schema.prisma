@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  leads      Lead[]
+  activities Activity[]
+
+  stageChanges LeadStageHistory[] @relation("UserStageChanges")
+
+  @@map("users")
+}
+
+model Lead {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String?
+  phone        String?
+  source       String?
+  campaignName String?
+  funnelStage  String
+  status       String
+  createdAt    DateTime @default(now())
+
+  ownerId Int?
+  owner   User? @relation(fields: [ownerId], references: [id])
+
+  client Client? @relation("LeadClient")
+
+  activities   Activity[]
+  stageHistory LeadStageHistory[]
+
+  @@map("leads")
+  @@index([id])
+  @@index([status])
+  @@index([funnelStage])
+}
+
+model LeadStageHistory {
+  id        Int      @id @default(autoincrement())
+  leadId    Int
+  fromStage String
+  toStage   String
+  changedAt DateTime @default(now())
+
+  changedById Int?
+  changedBy   User? @relation("UserStageChanges", fields: [changedById], references: [id])
+
+  lead Lead @relation(fields: [leadId], references: [id])
+
+  @@index([leadId])
+  @@index([changedById])
+}
+
+model Client {
+  id           Int      @id @default(autoincrement())
+  companyName  String
+  contactName  String
+  email        String
+  phone        String?
+  plan         String?
+  monthlyValue Float
+  startDate    DateTime
+  renewalDate  DateTime?
+  status       String
+
+  leadId Int @unique
+  lead   Lead @relation("LeadClient", fields: [leadId], references: [id])
+
+  campaigns Campaign[] @relation("ClientCampaigns")
+
+  @@map("clients")
+  @@index([status])
+  @@index([plan])
+}
+
+model Campaign {
+  id          Int      @id @default(autoincrement())
+  name        String
+  platform    String
+  objective   String
+  dailyBudget Float
+  status      String
+  startDate   DateTime
+  endDate     DateTime?
+
+  clientId Int
+  client   Client @relation("ClientCampaigns", fields: [clientId], references: [id])
+
+  metrics CampaignMetric[]
+
+  @@map("campaigns")
+  @@index([clientId])
+  @@index([status])
+}
+
+model CampaignMetric {
+  id         Int      @id @default(autoincrement())
+  campaignId Int
+  date       DateTime
+  impressions Int
+  clicks     Int
+  leads      Int
+  conversions Int
+  cost       Float
+  revenue    Float
+  roas       Float
+
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+  @@map("campaign_metrics")
+  @@index([campaignId])
+}
+
+model Activity {
+  id          Int      @id @default(autoincrement())
+  type        String
+  description String
+  createdAt   DateTime @default(now())
+
+  leadId Int?
+  userId Int?
+
+  lead Lead? @relation(fields: [leadId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
+  
+  @@index([leadId])
+  @@index([userId])
+  @@map("activities")
+}
