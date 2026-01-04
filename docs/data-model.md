@@ -33,7 +33,6 @@ Usuários do sistema (vendedores, gestores, tráfego).
 - phone
 - source
 - campaign_name
-- cost
 - funnel_stage
 - owner_id
 - status
