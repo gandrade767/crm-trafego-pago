@@ -35,7 +35,7 @@ export class AuthService {
     };
   }
 
-  // 🔐 LOGIN
+  // LOGIN
   static async login(data: LoginDTO) {
     const { email, password } = data;
 

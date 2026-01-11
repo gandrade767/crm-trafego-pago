@@ -32,7 +32,7 @@ export function authMiddleware(
       process.env.JWT_SECRET as string
     ) as unknown;
 
-    // 🔒 Narrowing manual (CORRETO)
+    // Narrowing manual
     if (
       typeof decoded === "object" &&
       decoded !== null &&
